@@ -1,0 +1,250 @@
+{
+	"info": {
+		"_postman_id": "1e813d6d-2150-436e-aecf-70500233ce21",
+		"name": "Phone Book",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18133317"
+	},
+	"item": [
+		{
+			"name": "List",
+			"item": [
+				{
+					"name": "GetContactList",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query GetContactList (\n    $distinct_on: [contact_select_column!], \n    $limit: Int, \n    $offset: Int, \n    $order_by: [contact_order_by!], \n    $where: contact_bool_exp\n) {\n  contact(\n      distinct_on: $distinct_on, \n      limit: $limit, \n      offset: $offset, \n      order_by: $order_by, \n      where: $where\n  ){\n    created_at\n    first_name\n    id\n    last_name\n    phones {\n      number\n    }\n  }\n}\n",
+								"variables": "{\n    \"where\":  {\n        \"first_name\": {\"_like\": \"%John%\" }\n    }\n}"
+							}
+						},
+						"url": {
+							"raw": "https://wpe-hiring.tokopedia.net/graphql",
+							"protocol": "https",
+							"host": [
+								"wpe-hiring",
+								"tokopedia",
+								"net"
+							],
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetContactDetail",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query GetContactDetail($id: Int!){\n    contact_by_pk(id: $id) {\n    last_name\n    id\n    first_name\n    created_at\n    phones {\n      number\n    }\n  }\n}",
+								"variables": "{\n    \"id\": 1\n}"
+							}
+						},
+						"url": {
+							"raw": "https://wpe-hiring.tokopedia.net/graphql",
+							"protocol": "https",
+							"host": [
+								"wpe-hiring",
+								"tokopedia",
+								"net"
+							],
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetPhoneList",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query GetPhoneList(\n    $where: phone_bool_exp, \n    $distinct_on: [phone_select_column!], \n    $limit: Int = 10, \n    $offset: Int = 0, \n    $order_by: [phone_order_by!]\n) {\n  phone(where: $where, distinct_on: $distinct_on, limit: $limit, offset: $offset, order_by: $order_by) {\n    contact {\n      last_name\n      first_name\n      id\n    }\n    number\n  }\n}\n",
+								"variables": "{\n  \"where\": {\n      \"contact\": {\n          \"first_name\": {\n              \"_like\": \"%John%\" \n            }\n        }\n    }\n}"
+							}
+						},
+						"url": {
+							"raw": "https://wpe-hiring.tokopedia.net/graphql",
+							"protocol": "https",
+							"host": [
+								"wpe-hiring",
+								"tokopedia",
+								"net"
+							],
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "This is query list that you need to get contact list\n\n*   GetContactList: You can get list of contact by hitting this query using parameter limit and offset.\n\n*   Limit: length of phone list you want to get\n*   Offset: specific page you want to get\n\n*   GetContactDetail: You can get detail of specific contact by hitting this query with parameter id\n*   GetPhoneList: You can get contact list by providing some substrings into the query. We provide these parameters to make it easy\n\n*   where: specific , \n*   distinct_on: , \n*   limit: length of phone list you want to get, \n*   offset:specific page you want to get, \n*   $order_by"
+		},
+		{
+			"name": "Create",
+			"item": [
+				{
+					"name": "AddContactWithPhones",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation AddContactWithPhones(\n    $first_name: String!, \n    $last_name: String!, \n    $phones: [phone_insert_input!]!\n    ) {\n  insert_contact(\n      objects: {\n          first_name: $first_name, \n          last_name: \n          $last_name, phones: { \n              data: $phones\n            }\n        }\n    ) {\n    returning {\n      first_name\n      last_name\n      id\n      phones {\n        number\n      }\n    }\n  }\n}\n",
+								"variables": "{\n    \"first_name\": \"John2\",\n    \"last_name\" : \"Doe2\",\n    \"phones\": [\n        {\n            \"number\":\"+62929292922374ds4\"\n        },\n        {\n            \"number\":\"+62929292922dsd344\"\n        }\n    ]\n}"
+							}
+						},
+						"url": {
+							"raw": "https://wpe-hiring.tokopedia.net/graphql",
+							"protocol": "https",
+							"host": [
+								"wpe-hiring",
+								"tokopedia",
+								"net"
+							],
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddNumberToContact",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation AddNumberToContact ($contact_id: Int!, $phone_number:String!) {\n  insert_phone(objects: {contact_id: $contact_id, number: $phone_number}) {\n    returning {\n      contact {\n        id\n        last_name\n        first_name\n        phones {\n          number\n        }\n      }\n    }\n  }\n}\n",
+								"variables": "{\n    \"contact_id\": 8,\n    \"phone_number\": \"+828272827282822\"\n}"
+							}
+						},
+						"url": {
+							"raw": "https://wpe-hiring.tokopedia.net/graphql",
+							"protocol": "https",
+							"host": [
+								"wpe-hiring",
+								"tokopedia",
+								"net"
+							],
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "This is query list that you need to add data to the contact list\n\n*   AddContactWithFirstNumber: you can add contact to the list by add input\n\n*   name: string\n*   phone_number: string\n\n*   AddNumberToContact: You can add new number for specific contact by add input\n\n*   contact_id: number\n*   phone_number: string"
+		},
+		{
+			"name": "Edit",
+			"item": [
+				{
+					"name": "EditContact",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation EditContactById($id: Int!, $_set: contact_set_input) {\n  update_contact_by_pk(pk_columns: {id: $id}, _set: $_set) {\n    id\n    first_name\n    last_name\n    phones {\n      number\n    }\n  }\n}\n",
+								"variables": "{\n  \"id\": 1, \n  \"_set\": {\n      \"first_name\": \"Dedi\",\n      \n    }\n}"
+							}
+						},
+						"url": {
+							"raw": "https://wpe-hiring.tokopedia.net/graphql",
+							"protocol": "https",
+							"host": [
+								"wpe-hiring",
+								"tokopedia",
+								"net"
+							],
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "EditPhoneNumber",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "\nmutation EditPhoneNumber($pk_columns: phone_pk_columns_input!, $new_phone_number:String!) {\n  update_phone_by_pk(pk_columns: $pk_columns, _set: {number: $new_phone_number}) {\n    contact {\n      id\n      last_name\n      first_name\n      created_at\n      phones {\n        number\n      }\n    }\n  }\n}\n",
+								"variables": "{\n    \"pk_columns\": {\n        \"number\": \"+62817181718122\",\n        \"contact_id\": 1 \n    },\n    \"new_phone_number\": \"+62818171817171wewe\"\n}"
+							}
+						},
+						"url": {
+							"raw": "https://wpe-hiring.tokopedia.net/graphql",
+							"protocol": "https",
+							"host": [
+								"wpe-hiring",
+								"tokopedia",
+								"net"
+							],
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "This is query list that you need to edit data in the contact list\n\n*   EditContactByID: you can edit specific contact id in the list by add input\n\n*   id: number\n*   _set: object\n\n*   EditPhoneNumber: You can add new number for specific contact by add input\n\n*   contact_id: number\n*   phone_number: string"
+		},
+		{
+			"name": "Delete",
+			"item": [
+				{
+					"name": "DeleteContactPhone",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation MyMutation($id: Int!) {\n  delete_contact_by_pk(id: $id) {\n    first_name\n    last_name\n    id\n  }\n}\n",
+								"variables": "{\n    \"id\": 10\n}"
+							}
+						},
+						"url": {
+							"raw": "https://wpe-hiring.tokopedia.net/graphql",
+							"protocol": "https",
+							"host": [
+								"wpe-hiring",
+								"tokopedia",
+								"net"
+							],
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "This is query list that you need to delete data in the contact list\n\n*   DeleteContactPhone: you can delete specific contact id in the list by add input\n\n*   number: string\n*   contact_id: number"
+		}
+	]
+}
