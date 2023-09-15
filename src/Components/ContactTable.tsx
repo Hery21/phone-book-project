@@ -1,6 +1,115 @@
 import React, { useEffect, useState } from 'react'
 import { useMutation, useQuery } from '@apollo/client';
-import { QUERY_GET_CONTACT_LIST, ADD_CONTACT_WITH_PHONES } from '../queries/queries'
+import { QUERY_GET_CONTACT_LIST, ADD_CONTACT_WITH_PHONES } from '../queries/queries';
+import styled from '@emotion/styled';
+
+const Container = styled.div`
+  font-family: Arial, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+const FormContainer = styled.div`
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+
+  input[type='text'] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  button[type='submit'] {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #0056b3;
+    }
+  }
+
+  input[type='text']::placeholder {
+    color: #ccc;
+  }
+`;
+
+const SearchContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+
+  input[type='text'] {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    margin-left: 10px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #0056b3;
+    }
+  }
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+const TableHeader = styled.th`
+  padding: 15px;
+  background-color: #007bff;
+  color: #fff;
+  text-align: left;
+`;
+
+const TableRow = styled.tr`
+  &:nth-of-type(even) {
+    background-color: #f2f2f2;
+  }
+`;
+
+const TableCell = styled.td`
+  padding: 15px;
+  text-align: left;
+`;
+
+const ActionButton = styled.button`
+  background-color: transparent;
+  color: #007bff;
+  border: none;
+  cursor: pointer;
+  margin-right: 10px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
 
 interface Contact {
   created_at: string; // You can use a more specific date type if needed
@@ -136,8 +245,8 @@ const ContactTable: React.FC = () => {
   if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <>
-      <form onSubmit={handleAdd}>
+    <Container>
+      <FormContainer onSubmit={handleAdd}>
         <label>
           First Name<br />
           <input
@@ -174,20 +283,25 @@ const ContactTable: React.FC = () => {
           ))}
         </div>
         <button type="submit">Add Contact</button>
-      </form>
-      <input
-        type="text"
-        placeholder="Search by phone or contact name"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-      />
+      </FormContainer><br />
+      <SearchContainer>
+        <label>
+          Search
+        <input
+          type="text"
+          placeholder="Search by phone or contact name"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        </label>
+      </SearchContainer>
       <button onClick={() => setSearchQuery('')}>Clear</button>
       <h2>Favorite Contacts</h2>
-      <table>
+      <Table>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Phone</th>
+            <TableHeader>Name</TableHeader>
+            <TableHeader>Phone</TableHeader>
           </tr>
         </thead>
         <tbody>
@@ -210,9 +324,9 @@ const ContactTable: React.FC = () => {
             </tr>
           )}
         </tbody>
-      </table>
+      </Table>
       <h2>Contacts</h2>
-      <table>
+      <Table>
         <thead>
           <tr>
             <th>Name</th>
@@ -259,7 +373,7 @@ const ContactTable: React.FC = () => {
             )
           )}
         </tbody>
-      </table>
+      </Table>
       <div>
         <button onClick={handlePrevPage} disabled={offset === 0}>
           Previous Page
@@ -269,7 +383,7 @@ const ContactTable: React.FC = () => {
         </button>
       </div>
       
-    </>
+    </Container>
   );
 }
 
