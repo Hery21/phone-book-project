@@ -13,7 +13,15 @@ interface Contact {
 }
 
 const ContactTable: React.FC = () => {
-  const { loading, error, data } = useQuery(QUERY_GET_CONTACT_LIST);
+  const [limit, setLimit] = useState(10);
+  const [offset, setOffset] = useState(0);
+  const { loading, error, data } = useQuery(QUERY_GET_CONTACT_LIST, {
+    variables: {
+      limit,
+      offset,
+    },
+  });
+
   const [addContactWithPhones] = useMutation(ADD_CONTACT_WITH_PHONES, {
     refetchQueries: [{ query: QUERY_GET_CONTACT_LIST }],
   });
@@ -93,6 +101,16 @@ const ContactTable: React.FC = () => {
       setAddContact({ ...addContact, phoneNumbers: updatedPhoneNumbers });
     } else {
       setAddContact({ ...addContact, [name]: value });
+    }
+  };
+
+  const handleNextPage = () => {
+    setOffset(offset + limit);
+  };
+
+  const handlePrevPage = () => {
+    if (offset >= limit) {
+      setOffset(offset - limit);
     }
   };
 
@@ -190,6 +208,14 @@ const ContactTable: React.FC = () => {
           ))}
         </tbody>
       </table>
+      <div>
+        <button onClick={handlePrevPage} disabled={offset === 0}>
+          Previous Page
+        </button>
+        <button onClick={handleNextPage}>
+          Next Page
+        </button>
+      </div>
     </>
   );
 }
