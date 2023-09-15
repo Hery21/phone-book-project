@@ -1,10 +1,11 @@
 import React from 'react';
+import ContactListPage from './Pages/ContactListPage';
 // import './App.css';
 
-function App() {
+const App: React.FC = () => {
   return (
     <div className="App">
-      hello
+      <ContactListPage />
     </div>
   );
 }
