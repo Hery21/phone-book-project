@@ -13,12 +13,15 @@ interface Contact {
 }
 
 const ContactTable: React.FC = () => {
-  const [limit, setLimit] = useState(10);
+  const limit: number = 10
   const [offset, setOffset] = useState(0);
+
+  const [searchQuery, setSearchQuery] = useState('');
   const { loading, error, data } = useQuery(QUERY_GET_CONTACT_LIST, {
     variables: {
       limit,
       offset,
+      searchQuery, 
     },
   });
 
@@ -114,6 +117,21 @@ const ContactTable: React.FC = () => {
     }
   };
 
+  const filteredPhones = searchQuery
+  ? data?.phone?.filter((phone: any) => {
+      if (!phone.contact) return false;
+      const search = searchQuery.toLowerCase();
+      const contactFirstName = phone.contact.first_name.toLowerCase();
+      const contactLastName = phone.contact.last_name.toLowerCase();
+
+      return (
+        contactFirstName.includes(search) ||
+        contactLastName.includes(search) ||
+        phone.number.includes(search)
+      );
+    })
+  : data?.phone;
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
@@ -157,6 +175,13 @@ const ContactTable: React.FC = () => {
         </div>
         <button type="submit">Add Contact</button>
       </form>
+      <input
+        type="text"
+        placeholder="Search by phone or contact name"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+      <button onClick={() => setSearchQuery('')}>Clear</button>
       <h2>Favorite Contacts</h2>
       <table>
         <thead>
@@ -166,18 +191,24 @@ const ContactTable: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {favoriteContacts?.map((contact: any) => (
-            <tr key={contact.id}>
-              <td>{contact.first_name} {contact.last_name}</td>
-              <td>
-                <ul>
-                  {contact.phones?.map((phone: any, index: number) => (
-                    <li key={index}>{phone.number}</li>
-                  ))}
-                </ul>
-              </td>
+          {filteredPhones?.length > 0 ? (
+            filteredPhones.map((phone: any) => (
+              <tr key={phone.id}>
+                <td>
+                  {phone.contact.first_name} {phone.contact.last_name}
+                </td>
+                <td>{phone.number}</td>
+                <td>
+                  <button onClick={() => handleFavorite(phone.contact)}>Favorite</button>
+                  <button onClick={() => handleDelete(phone.contact)}>Delete</button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={3}>No contacts found.</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
       <h2>Contacts</h2>
@@ -190,22 +221,43 @@ const ContactTable: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {regularContacts?.map((contact: any) => (
-            <tr key={contact.id}>
-              <td>{contact.first_name} {contact.last_name}</td>
-              <td>
-                <ul>
-                  {contact.phones?.map((phone: any, index: number) => (
-                    <li key={index}>{phone.number}</li>
-                  ))}
-                </ul>
-              </td>
-              <td>
-                <button onClick={() => handleFavorite(contact)}>Favorite</button>
-                <button onClick={() => handleDelete(contact)}>Delete</button>
-              </td>
-            </tr>
-          ))}
+          {searchQuery === '' ? (
+            regularContacts.map((contact: any) => (
+              <tr key={contact.id}>
+                <td>{contact.first_name} {contact.last_name}</td>
+                <td>
+                  <ul>
+                    {contact.phones?.map((phone: any, index: number) => (
+                      <li key={index}>{phone.number}</li>
+                    ))}
+                  </ul>
+                </td>
+                <td>
+                  <button onClick={() => handleFavorite(contact)}>Favorite</button>
+                  <button onClick={() => handleDelete(contact)}>Delete</button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            filteredPhones?.length > 0 ? (
+              filteredPhones.map((phone: any) => (
+                <tr key={phone.id}>
+                  <td>
+                    {phone.contact.first_name} {phone.contact.last_name}
+                  </td>
+                  <td>{phone.number}</td>
+                  <td>
+                    <button onClick={() => handleFavorite(phone.contact)}>Favorite</button>
+                    <button onClick={() => handleDelete(phone.contact)}>Delete</button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={3}>No contacts found.</td>
+              </tr>
+            )
+          )}
         </tbody>
       </table>
       <div>
@@ -216,6 +268,7 @@ const ContactTable: React.FC = () => {
           Next Page
         </button>
       </div>
+      
     </>
   );
 }

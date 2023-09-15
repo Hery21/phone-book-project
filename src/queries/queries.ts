@@ -40,22 +40,38 @@ export const QUERY_GET_CONTACT_DETAIL = gql`
 
 export const QUERY_GET_PHONE_LIST = gql`
   query GetPhoneList(
-    $where: phone_bool_exp, 
-    $distinct_on: [phone_select_column!], 
-    $limit: Int = 10, 
-    $offset: Int = 0, 
+    $where: phone_bool_exp,
+    $distinct_on: [phone_select_column!],
+    $limit: Int = 10,
+    $offset: Int = 0,
     $order_by: [phone_order_by!]
-) {
-  phone(where: $where, distinct_on: $distinct_on, limit: $limit, offset: $offset, order_by: $order_by) {
-    contact {
-      last_name
-      first_name
-      id
+  ) {
+    phone(
+      where: {
+        _and: [
+          $where,
+          {
+            contact: {
+              first_name: { _ilike: $searchQuery },
+            }
+          }
+        ]
+      }
+      distinct_on: $distinct_on,
+      limit: $limit,
+      offset: $offset,
+      order_by: $order_by
+    ) {
+      contact {
+        last_name
+        first_name
+        id
+      }
+      number
     }
-    number
   }
-}
 `
+
 
 export const ADD_CONTACT_WITH_PHONES = gql`
   mutation AddContactWithPhones(
