@@ -1,11 +1,24 @@
 import React, { useEffect, useState } from 'react'
-import { useQuery } from '@apollo/client';
-import { QUERY_GET_CONTACT_LIST } from '../queries/getContactList'
+import { useMutation, useQuery } from '@apollo/client';
+import { QUERY_GET_CONTACT_LIST, ADD_CONTACT_WITH_PHONES } from '../queries/queries'
+
+interface Contact {
+  created_at: string; // You can use a more specific date type if needed
+  first_name: string;
+  id: number;
+  last_name: string;
+  phones: {
+    number: string;
+  }[];
+}
 
 const ContactTable: React.FC = () => {
   const { loading, error, data } = useQuery(QUERY_GET_CONTACT_LIST);
+  const [addContactWithPhones] = useMutation(ADD_CONTACT_WITH_PHONES, {
+    refetchQueries: [{ query: QUERY_GET_CONTACT_LIST }],
+  });
 
-  const [regularContacts, setRegularContacts] = useState<any[]>([])
+  const [regularContacts, setRegularContacts] = useState<Contact[]>([])
   const [favoriteContacts, setFavoriteContacts] = useState<any[] | undefined>([])
   const [addContact, setAddContact] = useState<any | undefined>({
     first_name: '',
@@ -18,12 +31,11 @@ const ContactTable: React.FC = () => {
     if (!loading && !error && data) {
       setRegularContacts(data.contact);
     }
-  }, [loading, error, data]);
+  }, [loading, error, data, addContactWithPhones]);
 
   const handleFavorite = (contact: any) => {
     const updatedFavoriteContacts = [...(favoriteContacts || []), contact];
     setFavoriteContacts(updatedFavoriteContacts);
-    console.log(favoriteContacts)
     setRegularContacts((prevState) => prevState?.filter((c) => c.id !== contact.id))
   };
 
@@ -34,16 +46,37 @@ const ContactTable: React.FC = () => {
   const handleAdd = (e: any) => {
     e.preventDefault()
 
-    console.log("=========")
+    let isDuplicatePhoneNumber = false;
 
-    const newContactData: any = {
+    for (const contact of regularContacts) {
+      for (const existingPhone of contact.phones) {
+        if (addContact.phoneNumbers.includes(existingPhone)) {
+          isDuplicatePhoneNumber = true;
+          break;
+        }
+      }
+
+      if (isDuplicatePhoneNumber) {
+        break;
+      }
+    }
+
+    if (isDuplicatePhoneNumber) {
+      alert('A contact with this phone number already exists');
+      return;
+    }
+
+    const phones = addContact.phoneNumbers.map((phoneNumber: any) => ({ number: phoneNumber }));
+
+    addContactWithPhones({
+      variables: {
       first_name: addContact.first_name,
       last_name: addContact.last_name,
-      phoneNumbers: addContact.phoneNumbers.filter((phoneNumber: string) => phoneNumber.trim() !== '')
-    };
+      phones: phones
+      },
+    })
 
-    setRegularContacts([...regularContacts, newContactData]);
-    console.log(regularContacts)
+    // setRegularContacts([...regularContacts, newContactData]);
 
     setAddContact({ first_name: '', last_name: '', phoneNumbers: [''] });
   }
@@ -61,7 +94,6 @@ const ContactTable: React.FC = () => {
     } else {
       setAddContact({ ...addContact, [name]: value });
     }
-    console.log(addContact)
   };
 
   if (loading) return <p>Loading...</p>;
